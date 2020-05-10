@@ -1,4 +1,3 @@
-
 import os
 os.system('clear')
 
@@ -23,8 +22,8 @@ def about():
 def titlebar():
         print('-'*79)
         print('\t\t\t Make your life easy \n\t\t\t\t\t\t -Premchand' )
-        print('-'*79)
-        print('1.Docker   2.Docker Images   3.Docker Container   4.Docker volume    5.Web server   6.About')
+        print('-'*79) 
+        print('0.Exit    1.Docker   2.Docker Images   3.Docker Container   4.Docker volume    5.Web server   6.About')
 def exit1() :
         exit()
 def images_docker() :
@@ -126,6 +125,8 @@ def wordpress():
     os.system('yum install mysql')
     os.system('docker pull mysql:5.7')
     os.system('docker pull wordpress:5.1.1.-php7.3-apache')
+    os.system('netstat -nptl')
+    port = eval(input("Enter a port no  which is free : "))
     os.system('docker run -dit -e MYSQL_ROOT_PASSWORD=prem -e MYSQL_USER=Premchand -e MYSQL_PASSWORD=prem -e MYSQL_DATABASE=my_database mysql:5.7')
     os.system(''' echo """
 
@@ -151,7 +152,7 @@ services:
                         - data_base_os
 
                 ports:
-                        -  8081:80
+                        -  {0}:80
                 environment:
                         WORDPRESS_DB_HOST: data_base_os
                         WORDPRESS_DB_USER: Premchand
@@ -162,7 +163,7 @@ services:
 
 volumes:
           wp_storage:
-          mysql_storage:   """  > docker-compose.yml ''')
+          mysql_storage:   """  > docker-compose.yml '''.format(port))
     x=os.system('docker-compose up')
     if x != 0:
        compose_install()
@@ -318,6 +319,31 @@ def load():
      print('Please wait ...........')
      os.system('docker load -i {0}'.format(imgsrc))
      final()
+def launch_multiple_container():
+    import numpy
+    os.system('docker images ')
+    img = input("Select a image : " )
+    vol = input('Volume name or path you want to  add : ')
+    path = input('Where you want to attach volume in container : ')
+    number = int(input('how many time you want to launch : '))
+    port = input('Enter service port no which is running inside the container ( default 80 ) : ')
+    if port == '':
+        port = 80
+    else :
+        port = int(port)
+    i = 0
+    x = 9000
+    ports = numpy.zeros(number)
+    while i < number :
+        while os.system('netstat -nptl | grep {0}'.format(x)) == 0:
+            x += 1
+        os.system('docker container run -dit -p {0}:{1} -v {2}:{3}  {4} '.format(x,port,vol,path,img))
+        ports[i]=int(x)
+        i += 1
+    print('ports are used : ', ports)
+    print('Use this ip adress : ')
+    os.system('ifconfig enp0s3 | grep inet ' )
+    final()
 def upload():
         print('If you don have a account on docker hub then first create')
         os.system('docker images')
@@ -406,6 +432,7 @@ while True:
             Press 9  : Remove containers
             Press 10 : Copy somthing in container from base
             Press 11 : Delete all container
+            Press 12 : Launch multiple container in single go
                 ''') 
             ch = input('Enter your option : ')
             if ch == '0' :
@@ -433,6 +460,8 @@ while True:
                 copy(4)
             elif ch == '11':
                 removeallcontainer()
+            elif ch == '12':
+                launch_multiple_container()
             else:
                 invalid_option()
     elif menu == '4' :
